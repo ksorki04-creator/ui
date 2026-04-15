@@ -1,8 +1,5 @@
---[[
-  Library might be a bit outdated as I did not save it
-  Downloaded from history so not sure if this is the most recent version
-  Fix the stuff urself if its not
-]]
+--hi
+
 -- // Variables
 local ws = game:GetService("Workspace")
 local uis = game:GetService("UserInputService")
@@ -194,7 +191,7 @@ do
         end
         --
         if instance then
-            for i, v in pairs(instanceProperties) do
+            for i, v in instanceProperties do
                 if i == "Hidden" or i == "hidden" then
                     instanceHidden = true
                 else
@@ -229,7 +226,7 @@ do
     function utility:Instance(InstanceType, InstanceProperties)
         local Object = Instance.new(InstanceType)
         --
-        for Index, Value in pairs(InstanceProperties) do
+        for Index, Value in InstanceProperties do
             Object[Index] = Value
         end
         --
@@ -244,7 +241,7 @@ do
     end
     --
     function utility:UpdateOffset(instance, instanceOffset)
-        for i,v in pairs(library.drawings) do
+        for i,v in library.drawings do
             if v[1] == instance then
                 v[2] = instanceOffset
             end
@@ -252,7 +249,7 @@ do
     end
     --
     function utility:UpdateTransparency(instance, instanceTransparency)
-        for i,v in pairs(library.drawings) do
+        for i,v in library.drawings do
             if v[1] == instance then
                 v[3] = instanceTransparency
             end
@@ -264,7 +261,7 @@ do
         --
         local ind = 0
         --
-        for i,v in pairs(hidden and library.hidden or library.drawings) do
+        for i,v in (hidden and library.hidden or library.drawings) or {} do
             if v[1] == instance then
                 ind = i
                 if hidden then
@@ -300,7 +297,7 @@ do
     end
     --
     function utility:Disconnect(connection)
-        for i,v in pairs(library.connections) do
+        for i,v in library.connections do
             if v == connection then
                 library.connections[i] = nil
                 v:Disconnect()
@@ -369,12 +366,12 @@ do
         local currentIndex = {}
         local connection
         --
-        for i,v in pairs(instanceTo) do
+        for i,v in instanceTo do
             currentIndex[i] = instance[i]
         end
         --
         local function lerp()
-            for i,v in pairs(instanceTo) do
+            for i,v in instanceTo do
                 instance[i] = ((v - currentIndex[i]) * currentTime / instanceTime) + currentIndex[i]
             end
         end
@@ -391,9 +388,9 @@ do
     --
     function utility:Combine(table1, table2)
         local table3 = {}
-        for i,v in pairs(table1) do table3[i] = v end
+        for i,v in table1 do table3[i] = v end
         local t = #table3
-        for z,x in pairs(table2) do table3[z + t] = x end
+        for z,x in table2 do table3[z + t] = x end
         return table3
     end
     --
@@ -558,7 +555,7 @@ do
         end
         --
         function window:Move(vector)
-            for i,v in pairs(library.drawings) do
+            for i,v in library.drawings do
                 if v[2][2] then
                     v[1].Position = utility:Position(0, v[2][1].X, 0, v[2][1].Y, v[2][2])
                 else
@@ -573,7 +570,7 @@ do
                 dropdown.open = not dropdown.open
                 utility:LoadImage(dropdown.dropdown_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(dropdown.holder.drawings) do
+                for i,v in dropdown.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -588,7 +585,7 @@ do
                 multibox.open = not multibox.open
                 utility:LoadImage(multibox.multibox_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(multibox.holder.drawings) do
+                for i,v in multibox.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -602,7 +599,7 @@ do
                 local colorpicker = window.currentContent.colorpicker
                 colorpicker.open = not colorpicker.open
                 --
-                for i,v in pairs(colorpicker.holder.drawings) do
+                for i,v in colorpicker.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -614,7 +611,7 @@ do
                 local modemenu = window.currentContent.keybind.modemenu
                 window.currentContent.keybind.open = not window.currentContent.keybind.open
                 --
-                for i,v in pairs(modemenu.drawings) do
+                for i,v in modemenu.drawings or {} do
                     utility:Remove(v)
                 end
                 --
@@ -641,12 +638,12 @@ do
         end
         --
         function window:Unload()
-            for i,v in pairs(library.connections) do
+            for i,v in library.connections do
                 v:Disconnect()
                 v = nil
             end
             --
-            for i,v in next, library.hidden do
+            for i,v in library.hidden do
                 coroutine.wrap(function()
                     if v[1] and v[1].Remove and v[1].__OBJECT_EXISTS then
                         local instance = v[1]
@@ -658,7 +655,7 @@ do
                 end)()
             end
             --
-            for i,v in pairs(library.drawings) do
+            for i,v in library.drawings do
                 coroutine.wrap(function()
                     if v[1].__OBJECT_EXISTS then
                         local instance = v[1]
@@ -671,19 +668,19 @@ do
                 end)()
             end
             --
-            for i,v in pairs(library.objects) do
+            for i,v in library.objects do
                 i:Remove()
             end
             --
-            for i,v in pairs(library.began) do
+            for i,v in library.began do
                 v = nil
             end
             --
-            for i,v in pairs(library.ended) do
+            for i,v in library.ended do
                 v = nil
             end
             --
-            for i,v in pairs(library.changed) do
+            for i,v in library.changed do
                 v = nil
             end
             --
@@ -750,7 +747,7 @@ do
             window.isVisible = not window.isVisible
             --
             spawn(function()
-                for i, v in pairs(library.drawings) do
+                for i, v in library.drawings do
                     utility:Lerp(v[1], {Transparency = window.isVisible and v[3] or 0}, 0.25)
                 end
             end)
@@ -765,7 +762,7 @@ do
         function window:Initialize()
             if window.pages[1] then window.pages[1]:Show() end
             --
-            for i,v in pairs(window.pages) do
+            for i,v in window.pages do
                 v:Update()
             end
             --
@@ -852,7 +849,7 @@ do
         end
         --
         utility:Connection(uis.InputBegan,function(Input)
-            for _, func in pairs(library.began) do
+            for _, func in library.began do
                 if not window.dragging then
                     local e,s = pcall(function()
                         func(Input)
@@ -864,7 +861,7 @@ do
         end)
         --
         utility:Connection(uis.InputEnded,function(Input)
-            for _, func in pairs(library.ended) do
+            for _, func in library.ended do
                 local e,s = pcall(function()
                     func(Input)
                 end)
@@ -872,7 +869,7 @@ do
         end)
         --
         utility:Connection(uis.InputChanged,function()
-            for _, func in pairs(library.changed) do
+            for _, func in library.changed do
                 local e,s = pcall(function()
                     func()
                 end)
@@ -1227,7 +1224,7 @@ do
                 window.VisualPreview.State = State
                 --
                 task.spawn(function()
-                    for Index, Value in pairs(window.VisualPreview.Drawings) do
+                    for Index, Value in window.VisualPreview.Drawings do
                         utility:Lerp(Index, {Transparency = window.VisualPreview.State and Value or 0}, 0.2)
                         utility:UpdateTransparency(Index, window.VisualPreview.State and Value or 0)
                     end
@@ -1237,7 +1234,7 @@ do
             end
             --
             function window.VisualPreview:SetComponentProperty(Component, Property, State, Index)
-                for Index2, Value in pairs(window.VisualPreview.Components[Component]) do
+                for Index2, Value in window.VisualPreview.Components[Component] do
                     if Index then
                         Value[Index][Property] = State
                         --
@@ -1533,7 +1530,7 @@ do
             do -- New Drawings
                 local NewDrawings = {}
                 --
-                for Index, Value in pairs(library.drawings) do
+                for Index, Value in library.drawings do
                     if Value[1] and table.find(window.VisualPreview.Drawings, Value[1]) then
                         NewDrawings[Value[1]] = Value[3]
                     end
@@ -1550,7 +1547,7 @@ do
         function window:GetConfig()
             local config = {}
             --
-            for i,v in pairs(library.pointers) do
+            for i,v in library.pointers do
                 if typeof(v:Get()) == "table" and v:Get().Transparency then
                     local hue, sat, val = v:Get().Color:ToHSV()
                     config[i] = {Color = {hue, sat, val}, Transparency = v:Get().Transparency}
@@ -1565,7 +1562,7 @@ do
         function window:LoadConfig(config)
             local config = hs:JSONDecode(config)
             --
-            for i,v in pairs(config) do
+            for i,v in config do
                 if library.pointers[i] then
                     library.pointers[i]:Set(v)
                 end
@@ -1573,7 +1570,7 @@ do
         end
         --
         function window:Move(vector)
-            for i,v in pairs(library.drawings) do
+            for i,v in library.drawings do
                 if v[1].Visible then
                     if v[2][2] then
                         v[1].Position = utility:Position(0, v[2][1].X, 0, v[2][1].Y, v[2][2])
@@ -1590,7 +1587,7 @@ do
                 dropdown.open = not dropdown.open
                 utility:LoadImage(dropdown.dropdown_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(dropdown.holder.drawings) do
+                for i,v in dropdown.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -1605,7 +1602,7 @@ do
                 multibox.open = not multibox.open
                 utility:LoadImage(multibox.multibox_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(multibox.holder.drawings) do
+                for i,v in multibox.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -1619,7 +1616,7 @@ do
                 local colorpicker = window.currentContent.colorpicker
                 colorpicker.open = not colorpicker.open
                 --
-                for i,v in pairs(colorpicker.holder.drawings) do
+                for i,v in colorpicker.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -1631,7 +1628,7 @@ do
                 local modemenu = window.currentContent.keybind.modemenu
                 window.currentContent.keybind.open = not window.currentContent.keybind.open
                 --
-                for i,v in pairs(modemenu.drawings) do
+                for i,v in modemenu.drawings or {} do
                     utility:Remove(v)
                 end
                 --
@@ -1664,12 +1661,12 @@ do
         end
         --
         function window:Unload()
-            for i,v in pairs(library.connections) do
+            for i,v in library.connections do
                 v:Disconnect()
                 v = nil
             end
             --
-            for i,v in next, library.hidden do
+            for i,v in library.hidden do
                 coroutine.wrap(function()
                     if v[1] and v[1].Remove and v[1].__OBJECT_EXISTS then
                         local instance = v[1]
@@ -1681,7 +1678,7 @@ do
                 end)()
             end
             --
-            for i,v in pairs(library.drawings) do
+            for i,v in library.drawings do
                 coroutine.wrap(function()
                     if v[1].__OBJECT_EXISTS then
                         local instance = v[1]
@@ -1694,19 +1691,19 @@ do
                 end)()
             end
             --
-            for i,v in pairs(library.objects) do
+            for i,v in library.objects do
                 i:Remove()
             end
             --
-            for i,v in pairs(library.began) do
+            for i,v in library.began do
                 v = nil
             end
             --
-            for i,v in pairs(library.ended) do
+            for i,v in library.ended do
                 v = nil
             end
             --
-            for i,v in pairs(library.changed) do
+            for i,v in library.changed do
                 v = nil
             end
             --
@@ -1920,7 +1917,7 @@ do
             --
             function window.keybindslist:Resort()
                 local index = 0
-                for i,v in pairs(window.keybindslist.keybinds) do
+                for i,v in window.keybindslist.keybinds do
                     v:Move(0 + (index*17))
                     --
                     index = index + 1
@@ -2052,7 +2049,7 @@ do
                 keybindslist_accent.Visible = window.keybindslist.visible
                 keybindslist_title.Visible = window.keybindslist.visible
                 --
-                for i,v in pairs(window.keybindslist.keybinds) do
+                for i,v in window.keybindslist.keybinds do
                     v:Visibility()
                 end
             end
@@ -2152,7 +2149,7 @@ do
             --
             function window.statuslist:Resort()
                 local index = 0
-                for i,v in pairs(window.statuslist.statuses) do
+                for i,v in window.statuslist.statuses do
                     v:Move(0 + (index*17))
                     --
                     index = index + 1
@@ -2264,7 +2261,7 @@ do
                 statuslist_accent.Visible = window.statuslist.visible
                 statuslist_title.Visible = window.statuslist.visible
                 --
-                for i,v in pairs(window.statuslist.statuses) do
+                for i,v in window.statuslist.statuses do
                     v:Visibility()
                 end
             end
@@ -2336,7 +2333,7 @@ do
             window.isVisible = not window.isVisible
             --
             spawn(function()
-                for i, v in pairs(library.drawings) do
+                for i, v in library.drawings do
                     utility:Lerp(v[1], {Transparency = window.isVisible and v[3] or 0}, 0.25)
                 end
             end)
@@ -2351,7 +2348,7 @@ do
         function window:Initialize()
             window.pages[1]:Show()
             --
-            for i,v in pairs(window.pages) do
+            for i,v in window.pages do
                 v:Update()
             end
             --
@@ -2445,7 +2442,7 @@ do
         end
         --
         utility:Connection(uis.InputBegan,function(Input)
-            for _, func in pairs(library.began) do
+            for _, func in library.began do
                 if not window.dragging then
                     local e,s = pcall(function()
                         func(Input)
@@ -2457,7 +2454,7 @@ do
         end)
         --
         utility:Connection(uis.InputEnded,function(Input)
-            for _, func in pairs(library.ended) do
+            for _, func in library.ended do
                 local e,s = pcall(function()
                     func(Input)
                 end)
@@ -2465,7 +2462,7 @@ do
         end)
         --
         utility:Connection(uis.InputChanged,function()
-            for _, func in pairs(library.changed) do
+            for _, func in library.changed do
                 local e,s = pcall(function()
                     func()
                 end)
@@ -2503,7 +2500,7 @@ do
         --
         local position = 4
         --
-        for i,v in pairs(window.pages) do
+        for i,v in window.pages do
             position = position + (v.page_button.Size.X+2)
         end
         --
@@ -2559,7 +2556,7 @@ do
         function page:GetTotalYSize(Side)
             local TotalYSize = 0
             --
-            for i,v in pairs(page.sections) do
+            for i,v in page.sections do
                 if v.side == Side then
                     TotalYSize = TotalYSize + v.section_inline.Size.Y + 5
                 end
@@ -2572,7 +2569,7 @@ do
             page.sectionOffset["left"] = 0
             page.sectionOffset["right"] = 0
             --
-            for i,v in pairs(page.sections) do
+            for i,v in page.sections do
                 if v.side then
                     utility:UpdateOffset(v.section_inline, {Vector2.new(v.side == "right" and (window.tab_frame.Size.X/2)+2 or 5,5 + page["sectionOffset"][v.side]), window.tab_frame})
                     v:Update(page.sectionOffset[v.side] + 10)
@@ -2602,8 +2599,8 @@ do
                     Color = "textdark"
                 }
                 --
-                for i,v in pairs(window.currentPage.sections) do
-                    for z,x in pairs(v.visibleContent) do
+                for i,v in window.currentPage.sections do
+                    for z,x in v.visibleContent do
                         x.Visible = false
                     end
                 end
@@ -2626,8 +2623,8 @@ do
                 Color = "textcolor"
             }
             --
-            for i,v in pairs(page.sections) do
-                for z,x in pairs(v.visibleContent) do
+            for i,v in page.sections do
+                for z,x in v.visibleContent do
                     x.Visible = true
                 end
             end
@@ -2810,12 +2807,12 @@ do
             multiSection_outline.Size = utility:Size(1, -2, 1, -2, multiSection_inline)
             multiSection_frame.Size = utility:Size(1, -2, 1, -2, multiSection_outline)
             --
-            for Index, Value in pairs(multiSection.sections) do
+            for Index, Value in multiSection.sections do
                 Value:Update(Padding)
             end
         end
         --
-        for i,v in pairs(msections) do
+        for i,v in msections do
             local msection = {window = window, page = page, currentAxis = 24, sections = {}, visibleContent = {}, section_inline = multiSection_inline, section_outline = multiSection_outline, section_frame = multiSection_frame, section_accent = multiSection_accent}
             --
             local textBounds = utility:GetTextBounds(v, theme.textsize, theme.font)
@@ -2873,7 +2870,7 @@ do
                 if multiSection.currentSection == msection then
                     multiSection.visibleContent = utility:Combine(multiSection.backup, multiSection.currentSection.visibleContent)
                 else
-                    for z,x in pairs(msection.visibleContent) do
+                    for z,x in msection.visibleContent do
                         x.Visible = false
                     end
                 end
@@ -2892,7 +2889,7 @@ do
                         Color = "outline"
                     }
                     --
-                    for i,v in pairs(multiSection.currentSection.visibleContent) do
+                    for i,v in (multiSection.currentSection and multiSection.currentSection.visibleContent) or {} do
                         v.Visible = false
                     end
                     --
@@ -2908,7 +2905,7 @@ do
                         Color = "darkcontrast"
                     }
                     --
-                    for i,v in pairs(multiSection.currentSection.visibleContent) do
+                    for i,v in (multiSection.currentSection and multiSection.currentSection.visibleContent) or {} do
                         v.Visible = true
                     end
                     --
@@ -2927,7 +2924,7 @@ do
             multiSection.sections[#multiSection.sections + 1] = setmetatable(msection, sections)
         end
         --
-        for z,x in pairs(multiSection.visibleContent) do
+        for z,x in multiSection.visibleContent do
             multiSection.backup[z] = x
         end
         --
@@ -3346,7 +3343,7 @@ do
             function button:Update(Selection)
                 local Visible = Selection ~= nil and (Selection[1] ~= localplayer) or false
                 --
-                for Index, Value in pairs({button_outline, button_inline, button_frame, button_gradient, button_title, button_image}) do
+                for Index, Value in {button_outline, button_inline, button_frame, button_gradient, button_title, button_image} do
                     Value.Visible = page.open and Visible or false
                     --
                     if Visible then
@@ -3375,7 +3372,7 @@ do
             --
             function button:UpdateValue()
                 if button.open and button.holder.inline then
-                    for i,v in pairs(button.holder.buttons) do
+                    for i,v in button.holder.buttons do
                         local value = button.options[i]
                         --
                         v[1].Text = value
@@ -3393,7 +3390,7 @@ do
                 button.open = not button.open
                 utility:LoadImage(button_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(button.holder.drawings) do
+                for i,v in button.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -3476,7 +3473,7 @@ do
                 if Input.UserInputType == Enum.UserInputType.MouseButton1 and (button_outline.Visible or button.open) and window.isVisible then
                     if Input.UserInputType == Enum.UserInputType.MouseButton1 and window.isVisible and button_outline.Visible then
                         if button.open and button.holder.inline and utility:MouseOverDrawing({button.holder.inline.Position.X, button.holder.inline.Position.Y, button.holder.inline.Position.X + button.holder.inline.Size.X, button.holder.inline.Position.Y + button.holder.inline.Size.Y}) then
-                            for i,v in pairs(button.holder.buttons) do
+                            for i,v in button.holder.buttons do
                                 local value = button.options[i]
                                 --
                                 if utility:MouseOverDrawing({v[2].Position.X, v[2].Position.Y, v[2].Position.X + v[2].Size.X, v[2].Position.Y + v[2].Size.Y}) and value ~= button.current then
@@ -3522,7 +3519,7 @@ do
         utility:LoadImage(list_gradient, "gradient", "https://i.imgur.com/5hmlrjX.png")
         --
         function playerList:GetSelection()
-            for Index, Value in pairs(playerList.players) do
+            for Index, Value in playerList.players do
                 if Value[4] then
                     return Value
                 end
@@ -3550,7 +3547,7 @@ do
         local lastselection
         --
         function playerList:Refresh(Relation)
-            for Index, Value in pairs(playerList.items) do
+            for Index, Value in playerList.items do
                 local Found = playerList.players[Index + playerList.scrollingindex]
                 --
                 if Found then
@@ -3605,7 +3602,7 @@ do
         end)
         --
         utility:Connection(plrs.PlayerRemoving, function(Player)
-            for Index, Value in pairs(playerList.players) do
+            for Index, Value in playerList.players do
                 if Value[1] == Player then
                     Remove(playerList.players, Index)
                 end
@@ -3614,7 +3611,7 @@ do
             playerList:UpdateScroll()
         end)
         --
-        for Index, Value in pairs(plrs:GetPlayers()) do
+        for Index, Value in plrs:GetPlayers() do
             playerList.players[#playerList.players + 1] = {Value, Value.Name, Value == localplayer and "Local Player" or "None", false}
         end
         --
@@ -3630,7 +3627,7 @@ do
                             if Found[4] then
                                 Found[4] = false
                             else
-                                for Index2, Value2 in pairs(playerList.players) do
+                                for Index2, Value2 in playerList.players do
                                     if Value2 ~= Found then
                                         Value2[4] = false
                                     end
@@ -4224,7 +4221,7 @@ do
                         else
                             colorpicker.open = not colorpicker.open
                             --
-                            for i,v in pairs(colorpicker.holder.drawings) do
+                            for i,v in colorpicker.holder.drawings do
                                 utility:Remove(v)
                             end
                             --
@@ -4238,7 +4235,7 @@ do
                         if colorpicker.open then
                             colorpicker.open = not colorpicker.open
                             --
-                            for i,v in pairs(colorpicker.holder.drawings) do
+                            for i,v in colorpicker.holder.drawings do
                                 utility:Remove(v)
                             end
                             --
@@ -4252,7 +4249,7 @@ do
                 elseif Input.UserInputType == Enum.UserInputType.MouseButton1 and colorpicker.open then
                     colorpicker.open = not colorpicker.open
                     --
-                    for i,v in pairs(colorpicker.holder.drawings) do
+                    for i,v in colorpicker.holder.drawings do
                         utility:Remove(v)
                     end
                     --
@@ -4383,7 +4380,7 @@ do
             utility:LoadImage(keybind__gradient, "gradient", "https://i.imgur.com/5hmlrjX.png")
             --
             function keybind:Shorten(string)
-                for i,v in pairs(shortenedInputs) do
+                for i,v in shortenedInputs do
                     string = string.gsub(string, i, v)
                 end
                 return string
@@ -4438,7 +4435,7 @@ do
             end
             --
             function keybind:Reset()
-                for i,v in pairs(keybind.modemenu.buttons) do
+                for i,v in keybind.modemenu.buttons do
                     v.Color = v.Text == keybind.mode and theme.accent or theme.textcolor
                     --
                     library.colors[v] = {
@@ -4528,7 +4525,7 @@ do
                         if utility:MouseOverDrawing({keybind.modemenu.frame.Position.X, keybind.modemenu.frame.Position.Y, keybind.modemenu.frame.Position.X + keybind.modemenu.frame.Size.X, keybind.modemenu.frame.Position.Y + keybind.modemenu.frame.Size.Y}) then
                             local changed = false
                             --
-                            for i,v in pairs(keybind.modemenu.buttons) do
+                            for i,v in keybind.modemenu.buttons do
                                 if utility:MouseOverDrawing({keybind.modemenu.frame.Position.X, keybind.modemenu.frame.Position.Y + (15 * (i - 1)), keybind.modemenu.frame.Position.X + keybind.modemenu.frame.Size.X, keybind.modemenu.frame.Position.Y + (15 * (i - 1)) + 15}) then
                                     keybind.mode = v.Text
                                     changed = true
@@ -4539,7 +4536,7 @@ do
                         else
                             keybind.open = not keybind.open
                             --
-                            for i,v in pairs(keybind.modemenu.drawings) do
+                            for i,v in keybind.modemenu.drawings do
                                 utility:Remove(v)
                             end
                             --
@@ -4600,7 +4597,7 @@ do
                         --
                         utility:LoadImage(keybind__gradient, "gradient", "https://i.imgur.com/5hmlrjX.png")
                         --
-                        for i,v in pairs({"Always", "Toggle", "On Hold", "Off Hold"}) do
+                        for i,v in {"Always", "Toggle", "On Hold", "Off Hold"} do
                             local button_title = utility:Create("TextLabel", {Vector2.new(modemenu_frame.Size.X/2,15 * (i-1)), modemenu_frame}, {
                                 Text = v,
                                 Size = theme.textsize,
@@ -4662,7 +4659,7 @@ do
         local max = info.max or info.Max or info.maximum or info.Maximum or 100
         local maxtext = info.maximumtext or info.Maximumtext or info.maximumText or info.MaximumText or max
         local sub = info.suffix or info.Suffix or info.ending or info.Ending or info.prefix or info.Prefix or info.measurement or info.Measurement or ""
-        local disable = info.disable or info.Disable or info.disabled or info.Disabled or false
+        local disable = info.disable or info.Disable or info.disabled or info.disabled or false
         local decimals = info.decimals or info.Decimals or 1
         decimals = 1 / decimals
         local pointer = info.pointer or info.Pointer or info.flag or info.Flag or nil
@@ -5328,7 +5325,7 @@ do
         --
         function dropdown:Update()
             if dropdown.open and dropdown.holder.inline then
-                for i,v in pairs(dropdown.holder.buttons) do
+                for i,v in dropdown.holder.buttons do
                     local value = max and dropdown.options[i + dropdown.scrollindex] or dropdown.options[i]
                     --
                     v[1].Text = value
@@ -5360,7 +5357,7 @@ do
                     if max and dropdown.bar and utility:MouseOverDrawing({dropdown.bar.Position.X - 1, dropdown.bar.Position.Y - 1, dropdown.bar.Position.X - 1 + dropdown.bar.Size.X + 2, dropdown.bar.Position.Y - 1 + dropdown.bar.Size.Y + 2}) then
                         dropdown.scrolling = {true, (utility:MouseLocation().Y - dropdown.bar.Position.Y)}
                     else
-                        for i,v in pairs(dropdown.holder.buttons) do
+                        for i,v in dropdown.holder.buttons do
                             local value = max and dropdown.options[(i + dropdown.scrollindex)] or dropdown.options[i]
                             --
                             if utility:MouseOverDrawing({v[2].Position.X, v[2].Position.Y, v[2].Position.X + v[2].Size.X, v[2].Position.Y + v[2].Size.Y}) and v[1].Text ~= dropdown.current then
@@ -5471,7 +5468,7 @@ do
                         dropdown.open = not dropdown.open
                         utility:LoadImage(dropdown_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                         --
-                        for i,v in pairs(dropdown.holder.drawings) do
+                        for i,v in dropdown.holder.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -5487,7 +5484,7 @@ do
                         dropdown.open = not dropdown.open
                         utility:LoadImage(dropdown_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                         --
-                        for i,v in pairs(dropdown.holder.drawings) do
+                        for i,v in dropdown.holder.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -5503,7 +5500,7 @@ do
                 dropdown.open = not dropdown.open
                 utility:LoadImage(dropdown_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(dropdown.holder.drawings) do
+                for i,v in dropdown.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -5655,7 +5652,7 @@ do
         --
         function multibox:Update()
             if multibox.open and multibox.holder.inline then
-                for i,v in pairs(multibox.holder.buttons) do
+                for i,v in multibox.holder.buttons do
                     v[1].Color = Find(multibox.current, v[1].Text) and theme.accent or theme.textcolor
                     v[1].Position = utility:Position(0, Find(multibox.current, v[1].Text) and 8 or 6, 0, 2, v[2])
                     --
@@ -5671,7 +5668,7 @@ do
         function multibox:Serialize(tbl)
             local str = ""
             --
-            for i,v in pairs(tbl) do
+            for i,v in tbl do
                 str = str..v..", "
             end
             --
@@ -5681,7 +5678,7 @@ do
         function multibox:Resort(tbl,original)
             local newtbl = {}
             --
-            for i,v in pairs(original) do
+            for i,v in original do
                 if Find(tbl, v) then
                     newtbl[#newtbl + 1] = v
                 end
@@ -5708,7 +5705,7 @@ do
         library.began[#library.began + 1] = function(Input)
             if Input.UserInputType == Enum.UserInputType.MouseButton1 and window.isVisible and multibox_outline.Visible then
                 if multibox.open and multibox.holder.inline and utility:MouseOverDrawing({multibox.holder.inline.Position.X, multibox.holder.inline.Position.Y, multibox.holder.inline.Position.X + multibox.holder.inline.Size.X, multibox.holder.inline.Position.Y + multibox.holder.inline.Size.Y}) then
-                    for i,v in pairs(multibox.holder.buttons) do
+                    for i,v in multibox.holder.buttons do
                         if utility:MouseOverDrawing({v[2].Position.X, v[2].Position.Y, v[2].Position.X + v[2].Size.X, v[2].Position.Y + v[2].Size.Y}) and v[1].Text ~= multibox.current then
                             if not Find(multibox.current, v[1].Text) then
                                 multibox.current[#multibox.current + 1] = v[1].Text
@@ -5759,7 +5756,7 @@ do
                             Color = "inline"
                         }
                         --
-                        for i,v in pairs(multibox.options) do
+                        for i,v in multibox.options or {} do
                             local multibox_value_frame = utility:Create("Frame", {Vector2.new(1,1 + (19 * (i-1))), multibox_open_inline}, {
                                 Size = utility:Size(1, -2, 0, 18, multibox_open_inline),
                                 Position = utility:Position(0, 1, 0, 1 + (19 * (i-1)), multibox_open_inline),
@@ -5802,7 +5799,7 @@ do
                         multibox.open = not multibox.open
                         utility:LoadImage(multibox_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                         --
-                        for i,v in pairs(multibox.holder.drawings) do
+                        for i,v in multibox.holder.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -5818,7 +5815,7 @@ do
                         multibox.open = not multibox.open
                         utility:LoadImage(multibox_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                         --
-                        for i,v in pairs(multibox.holder.drawings) do
+                        for i,v in multibox.holder.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -5834,7 +5831,7 @@ do
                 multibox.open = not multibox.open
                 utility:LoadImage(multibox_image, "arrow_down", "https://i.imgur.com/tVqy0nL.png")
                 --
-                for i,v in pairs(multibox.holder.drawings) do
+                for i,v in multibox.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -5949,7 +5946,7 @@ do
         utility:LoadImage(keybind__gradient, "gradient", "https://i.imgur.com/5hmlrjX.png")
         --
         function keybind:Shorten(string)
-            for i,v in pairs(shortenedInputs) do
+            for i,v in shortenedInputs do
                 string = string.gsub(string, i, v)
             end
             return string
@@ -6005,7 +6002,7 @@ do
         end
         --
         function keybind:Reset()
-            for i,v in pairs(keybind.modemenu.buttons) do
+            for i,v in keybind.modemenu.buttons do
                 v.Color = v.Text == keybind.mode and theme.accent or theme.textcolor
                 --
                 library.colors[v] = {
@@ -6090,7 +6087,7 @@ do
                     if utility:MouseOverDrawing({keybind.modemenu.frame.Position.X, keybind.modemenu.frame.Position.Y, keybind.modemenu.frame.Position.X + keybind.modemenu.frame.Size.X, keybind.modemenu.frame.Position.Y + keybind.modemenu.frame.Size.Y}) then
                         local changed = false
                         --
-                        for i,v in pairs(keybind.modemenu.buttons) do
+                        for i,v in keybind.modemenu.buttons do
                             if utility:MouseOverDrawing({keybind.modemenu.frame.Position.X, keybind.modemenu.frame.Position.Y + (15 * (i - 1)), keybind.modemenu.frame.Position.X + keybind.modemenu.frame.Size.X, keybind.modemenu.frame.Position.Y + (15 * (i - 1)) + 15}) then
                                 keybind.mode = v.Text
                                 changed = true
@@ -6101,7 +6098,7 @@ do
                     else
                         keybind.open = not keybind.open
                         --
-                        for i,v in pairs(keybind.modemenu.drawings) do
+                        for i,v in keybind.modemenu.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -6162,7 +6159,7 @@ do
                     --
                     utility:LoadImage(keybind__gradient, "gradient", "https://i.imgur.com/5hmlrjX.png")
                     --
-                    for i,v in pairs({"Always", "Toggle", "On Hold", "Off Hold"}) do
+                    for i,v in {"Always", "Toggle", "On Hold", "Off Hold"} do
                         local button_title = utility:Create("TextLabel", {Vector2.new(modemenu_frame.Size.X/2,15 * (i-1)), modemenu_frame}, {
                             Text = v,
                             Size = theme.textsize,
@@ -6596,7 +6593,7 @@ do
                     else
                         colorpicker.open = not colorpicker.open
                         --
-                        for i,v in pairs(colorpicker.holder.drawings) do
+                        for i,v in colorpicker.holder.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -6610,7 +6607,7 @@ do
                     if colorpicker.open then
                         colorpicker.open = not colorpicker.open
                         --
-                        for i,v in pairs(colorpicker.holder.drawings) do
+                        for i,v in colorpicker.holder.drawings do
                             utility:Remove(v)
                         end
                         --
@@ -6624,7 +6621,7 @@ do
             elseif Input.UserInputType == Enum.UserInputType.MouseButton1 and colorpicker.open then
                 colorpicker.open = not colorpicker.open
                 --
-                for i,v in pairs(colorpicker.holder.drawings) do
+                for i,v in colorpicker.holder.drawings do
                     utility:Remove(v)
                 end
                 --
@@ -7041,7 +7038,7 @@ do
                         else
                             colorpicker.open = not colorpicker.open
                             --
-                            for i,v in pairs(colorpicker.holder.drawings) do
+                            for i,v in colorpicker.holder.drawings do
                                 utility:Remove(v)
                             end
                             --
@@ -7055,7 +7052,7 @@ do
                         if colorpicker.open then
                             colorpicker.open = not colorpicker.open
                             --
-                            for i,v in pairs(colorpicker.holder.drawings) do
+                            for i,v in colorpicker.holder.drawings do
                                 utility:Remove(v)
                             end
                             --
@@ -7069,7 +7066,7 @@ do
                 elseif Input.UserInputType == Enum.UserInputType.MouseButton1 and colorpicker.open then
                     colorpicker.open = not colorpicker.open
                     --
-                    for i,v in pairs(colorpicker.holder.drawings) do
+                    for i,v in colorpicker.holder.drawings do
                         utility:Remove(v)
                     end
                     --
@@ -7237,7 +7234,7 @@ do
         end
         --
         function list:Refresh()
-            for Index, Value in pairs(list.buttons) do
+            for Index, Value in list.buttons do
                 Value.Text = list.options[Index + list.scrollingindex] or ""
                 Value.Color = (Index + list.scrollingindex) == list.current and theme.accent or theme.textcolor
                 --
