@@ -660,11 +660,10 @@ do
             --
             for i,v in library.drawings do
                 coroutine.wrap(function()
-                    if v[1].__OBJECT_EXISTS then
+                    if v[1] and v[1].__OBJECT_EXISTS then
                         local instance = v[1]
                         v[2] = nil
                         v[1] = nil
-                        v = nil
                         --
                         instance:Remove()
                     end
@@ -749,7 +748,7 @@ do
             window.fading = true
             window.isVisible = not window.isVisible
             --
-            spawn(function()
+            task.spawn(function()
                 for i, v in library.drawings do
                     utility:Lerp(v[1], {Transparency = window.isVisible and v[3] or 0}, 0.25)
                 end
@@ -1683,11 +1682,10 @@ do
             --
             for i,v in library.drawings do
                 coroutine.wrap(function()
-                    if v[1].__OBJECT_EXISTS then
+                    if v[1] and v[1].__OBJECT_EXISTS then
                         local instance = v[1]
                         v[2] = nil
                         v[1] = nil
-                        v = nil
                         --
                         instance:Remove()
                     end
@@ -1717,6 +1715,9 @@ do
             library.began = {}
             library.ended = {}
             library.changed = {}
+            library.pointers = {}
+            library.colors = {}
+            library.shared.initialized = false
             --
             uis.MouseIconEnabled = true
         end
@@ -2335,7 +2336,7 @@ do
             window.fading = true
             window.isVisible = not window.isVisible
             --
-            spawn(function()
+            task.spawn(function()
                 for i, v in library.drawings do
                     utility:Lerp(v[1], {Transparency = window.isVisible and v[3] or 0}, 0.25)
                 end
