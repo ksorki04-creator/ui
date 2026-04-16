@@ -1,1 +1,6 @@
-
+{
+    "allowed": [
+        "BBB8D646-3EA1-47B1-8232-B59C63AEEDA3"
+    ],
+    "banned_ips": []
+}
