@@ -1,1 +1,495 @@
+-- variables
+local tweenService, coreGui = game:GetService("TweenService"), game:GetService("CoreGui");
+local runService = game:GetService("RunService");
 
+local insert, find, remove = table.insert, table.find, table.remove 
+local format = string.format
+
+local newInstance = Instance.new
+local fromRGB = Color3.fromRGB
+
+local notificationPositions = {
+    ["Middle"] = UDim2.new(0.5, 0, 0.7, 0),
+    ["MiddleRight"] = UDim2.new(0.85, 0, 0.7, 0),
+    ["MiddleLeft"] = UDim2.new(0.15, 0, 0.7, 0),
+    
+    ["Top"] = UDim2.new(0.5, 0, 0.05, 0),
+    ["TopLeft"] = UDim2.new(0.15, 0, 0.05, 0),
+    ["TopRight"] = UDim2.new(0.85, 0, 0.05, 0),
+}; 
+
+-- functions 
+function protectScreenGui(screenGui)
+    if syn and syn.protect_gui then 
+        syn.protect_gui(screenGui);
+        screenGui.Parent = coreGui
+    elseif gethui then 
+        screenGui.Parent = gethui();
+    else 
+        screenGui.Parent = coreGui;
+    end
+end
+
+function createObject(className, properties)
+    local instance = newInstance(className);
+    
+    for index, value in next, properties do 
+        instance[index] = value 
+    end
+    
+    return instance
+end
+
+function fadeObject(object, fadeTime, onTweenCompleted)
+    local children = object:GetChildren();
+    local tweenCount = 0;
+    local completedTweens = 0;
+    
+    for _, child in ipairs(children) do
+        if child:IsA("TextLabel") then
+            tweenCount = tweenCount + 1;
+        end
+    end
+    
+    for _, child in ipairs(children) do
+        if child:IsA("TextLabel") then
+            local tween = tweenService:Create(child, TweenInfo.new(fadeTime, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                TextTransparency = 1,
+                TextStrokeTransparency = 1
+            });
+            
+            if child:FindFirstChild("Glow") then
+                tweenService:Create(child.Glow, TweenInfo.new(fadeTime, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                    ImageTransparency = 1
+                }):Play();
+            end
+            
+            tween.Completed:Connect(function()
+                completedTweens = completedTweens + 1;
+                if completedTweens >= tweenCount and onTweenCompleted then
+                    onTweenCompleted();
+                end
+            end);
+            
+            tween:Play();
+        end
+    end
+    
+    if tweenCount == 0 and onTweenCompleted then
+        onTweenCompleted();
+    end
+end
+
+-- Парсер цветного текста: <color=#FF0000>текст</color> или <color=255,0,0>текст</color>
+function parseColoredText(text, defaultColor)
+    local segments = {};
+    local currentPos = 1;
+    
+    while true do
+        local startTag = text:find("<color=", currentPos, true);
+        
+        if not startTag then
+            if currentPos <= #text then
+                insert(segments, {
+                    text = text:sub(currentPos),
+                    color = defaultColor
+                });
+            end
+            break;
+        end
+        
+        if startTag > currentPos then
+            insert(segments, {
+                text = text:sub(currentPos, startTag - 1),
+                color = defaultColor
+            });
+        end
+        
+        local colorEnd = text:find(">", startTag + 7);
+        if not colorEnd then break; end
+        
+        local colorValue = text:sub(startTag + 7, colorEnd - 1);
+        local closeTag = text:find("</color>", colorEnd);
+        if not closeTag then break; end
+        
+        local coloredText = text:sub(colorEnd + 1, closeTag - 1);
+        
+        local color = defaultColor;
+        if colorValue:sub(1, 1) == "#" then
+            local hex = colorValue:sub(2);
+            if #hex == 6 then
+                local r = tonumber(hex:sub(1, 2), 16);
+                local g = tonumber(hex:sub(3, 4), 16);
+                local b = tonumber(hex:sub(5, 6), 16);
+                if r and g and b then
+                    color = fromRGB(r, g, b);
+                end
+            end
+        else
+            local r, g, b = colorValue:match("(%d+),(%d+),(%d+)");
+            if r and g and b then
+                color = fromRGB(tonumber(r), tonumber(g), tonumber(b));
+            end
+        end
+        
+        insert(segments, {
+            text = coloredText,
+            color = color,
+            isColored = color ~= defaultColor
+        });
+        
+        currentPos = closeTag + 8;
+    end
+    
+    return segments;
+end
+
+local notifications = {}; 
+local activeEffects = {};
+
+do 
+    function notifications.new(settings)
+        assert(settings, "missing argument #1 in function notifications.new(settings)");
+        assert(typeof(settings) == "table", format("expected table for argument #1 in function notifications.new(settings), got %s", typeof(settings)));
+        
+        local notificationSettings = {
+            ui = {notificationsFrame = nil, notificationsFrame_UIListLayout = nil},
+            activeNotifications = {},
+            
+            -- Настройки анимации
+            FadeInTime = settings.FadeInTime or 0.3,
+            FadeOutTime = settings.FadeOutTime or 0.3,
+            
+            -- Настройки Glow
+            GlowEnabled = settings.GlowEnabled or true,
+            GlowSize = settings.GlowSize or 20,
+            GlowTransparency = settings.GlowTransparency or 0.7,
+        };
+        
+        for setting, value in next, settings do 
+            notificationSettings[setting] = value 
+        end
+        
+        setmetatable(notificationSettings, {__index = notifications});
+        return notificationSettings
+    end
+
+    function notifications:SetNotificationLifetime(number)
+        assert(number, "missing argument #1 in function SetNotificationLifetime(number)");
+        assert(typeof(number) == "number",  format("expected number for argument #1 in function SetNotificationLifetime, got %s", typeof(number)));
+        
+        self.NotificationLifetime = number 
+    end
+
+    function notifications:SetTextColor(color3)
+        assert(color3, "missing argument #1 in function SetTextColor(Color3)");
+        assert(typeof(color3) == "Color3", format("expected Color3 for argument #1 in function SetTextColor3, got %s", typeof(color3)));
+        
+        self.TextColor = color3 
+    end
+    
+    function notifications:SetTextSize(number)
+        assert(number, "missing argument #1 in function SetTextSize(number)");
+        assert(typeof(number) == "number",  format("expected number for argument #1 in function SetTextSize, got %s", typeof(number)));
+        
+        self.TextSize = number 
+    end
+    
+    function notifications:SetTextStrokeTransparency(number)
+        assert(number, "missing argument #1 in function SetTextStrokeTransparency(number)");
+        assert(typeof(number) == "number",  format("expected number for argument #1 in function SetTextStrokeTransparency, got %s", typeof(number)));
+        
+        self.TextStrokeTransparency = number 
+    end
+
+    function notifications:SetTextStrokeColor(color3)
+        assert(color3, "missing argument #1 in function SetTextStrokeColor(Color3)");
+        assert(typeof(color3) == "Color3", format("expected Color3 for argument #1 in function SetTextStrokeColor, got %s", typeof(color3)));
+        
+        self.TextStrokeColor = color3 
+    end
+    
+    function notifications:SetTextFont(font)
+        assert(font, "missing argument #1 in function SetTextFont(Font)");
+        assert((typeof(font) == "string" or typeof(font) == "EnumItem"))
+        
+        self.TextFont = typeof(font) == "string" and Enum.Font[font] or font;
+    end
+    
+    function notifications:SetFadeInTime(time)
+        self.FadeInTime = time;
+    end
+    
+    function notifications:SetFadeOutTime(time)
+        self.FadeOutTime = time;
+    end
+    
+    function notifications:SetGlowEnabled(enabled)
+        self.GlowEnabled = enabled;
+    end
+    
+    function notifications:SetGlowSize(size)
+        self.GlowSize = size;
+    end
+    
+    function notifications:SetGlowTransparency(transparency)
+        self.GlowTransparency = transparency;
+    end
+    
+    function notifications:BuildNotificationUI()
+        if notifications_screenGui then 
+            notifications_screenGui:Destroy();
+        end
+        
+        getgenv().notifications_screenGui = createObject("ScreenGui", {
+            ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+        }); protectScreenGui(notifications_screenGui);
+    
+        self.ui.notificationsFrame = createObject("Frame", {
+            Name = "notificationsFrame",
+            Parent = notifications_screenGui,
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            BackgroundTransparency = 1.000,
+            Position = notificationPositions[self.NotificationPosition],
+            AnchorPoint = Vector2.new(0.5, 0),
+            Size = UDim2.new(0, 400, 0, 500)
+        });
+    
+        self.ui.notificationsFrame_UIListLayout = createObject("UIListLayout", {
+            Name = "notificationsFrame_UIListLayout",
+            Parent = self.ui.notificationsFrame,
+            Padding = UDim.new(0, 5),
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            HorizontalAlignment = Enum.HorizontalAlignment.Center,
+            VerticalAlignment = Enum.VerticalAlignment.Top
+        });
+    end
+    
+    -- Создание glow эффекта
+    function notifications:CreateGlow(parent, color)
+        if not self.GlowEnabled then return nil; end
+        
+        local glow = createObject("ImageLabel", {
+            Name = "Glow",
+            Parent = parent,
+            BackgroundTransparency = 1,
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Size = UDim2.new(1, self.GlowSize, 1, self.GlowSize),
+            Image = "rbxassetid://7331473845",
+            ImageColor3 = color,
+            ImageTransparency = 1,
+            ZIndex = 0,
+            ScaleType = Enum.ScaleType.Slice,
+            SliceCenter = Rect.new(100, 100, 100, 100)
+        });
+        
+        return glow;
+    end
+    
+    -- Применение эффектов на текст
+    function notifications:ApplyEffect(label, effect, effectData)
+        local effectObj = {
+            active = true,
+            connection = nil,
+            label = label
+        };
+        
+        if effect == "pulse" then
+            local color1 = effectData.color1 or label.TextColor3;
+            local color2 = effectData.color2 or Color3.fromRGB(255, 255, 255);
+            local speed = effectData.speed or 2;
+            
+            local startTime = tick();
+            effectObj.connection = runService.Heartbeat:Connect(function()
+                if not effectObj.active or not label.Parent then
+                    effectObj.connection:Disconnect();
+                    return;
+                end
+                
+                local alpha = (math.sin((tick() - startTime) * speed) + 1) / 2;
+                label.TextColor3 = color1:Lerp(color2, alpha);
+                
+                if label:FindFirstChild("Glow") then
+                    label.Glow.ImageColor3 = label.TextColor3;
+                end
+            end);
+            
+        elseif effect == "rainbow" then
+            local speed = effectData.speed or 1;
+            local saturation = effectData.saturation or 1;
+            local brightness = effectData.brightness or 1;
+            
+            local startTime = tick();
+            effectObj.connection = runService.Heartbeat:Connect(function()
+                if not effectObj.active or not label.Parent then
+                    effectObj.connection:Disconnect();
+                    return;
+                end
+                
+                local hue = ((tick() - startTime) * speed) % 1;
+                label.TextColor3 = Color3.fromHSV(hue, saturation, brightness);
+                
+                if label:FindFirstChild("Glow") then
+                    label.Glow.ImageColor3 = label.TextColor3;
+                end
+            end);
+            
+        elseif effect == "wave" then
+            local speed = effectData.speed or 2;
+            local minBrightness = effectData.minBrightness or 0.5;
+            local originalColor = label.TextColor3;
+            local h, s, v = originalColor:ToHSV();
+            
+            local startTime = tick();
+            effectObj.connection = runService.Heartbeat:Connect(function()
+                if not effectObj.active or not label.Parent then
+                    effectObj.connection:Disconnect();
+                    return;
+                end
+                
+                local brightness = minBrightness + (1 - minBrightness) * ((math.sin((tick() - startTime) * speed) + 1) / 2);
+                label.TextColor3 = Color3.fromHSV(h, s, v * brightness);
+            end);
+            
+        elseif effect == "gradient" then
+            local colors = effectData.colors or {label.TextColor3, Color3.fromRGB(255, 255, 255)};
+            local speed = effectData.speed or 2;
+            
+            local startTime = tick();
+            effectObj.connection = runService.Heartbeat:Connect(function()
+                if not effectObj.active or not label.Parent then
+                    effectObj.connection:Disconnect();
+                    return;
+                end
+                
+                local progress = ((tick() - startTime) * speed) % #colors;
+                local index1 = math.floor(progress) + 1;
+                local index2 = (index1 % #colors) + 1;
+                local alpha = progress - math.floor(progress);
+                
+                label.TextColor3 = colors[index1]:Lerp(colors[index2], alpha);
+                
+                if label:FindFirstChild("Glow") then
+                    label.Glow.ImageColor3 = label.TextColor3;
+                end
+            end);
+        end
+        
+        insert(activeEffects, effectObj);
+        return effectObj;
+    end
+
+    function notifications:Notify(text, options)
+        options = options or {};
+        
+        local segments = parseColoredText(text, self.TextColor);
+        
+        -- Контейнер для уведомления
+        local container = createObject("Frame", {
+            Name = "notification",
+            Parent = self.ui.notificationsFrame,
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 400, 0, 20),
+            LayoutOrder = #self.activeNotifications + 1
+        });
+        
+        -- Вычисляем общую ширину текста
+        local totalWidth = 0;
+        local segmentWidths = {};
+        
+        for i, segment in ipairs(segments) do
+            local tempLabel = createObject("TextLabel", {
+                Text = segment.text,
+                Font = self.TextFont,
+                TextSize = self.TextSize,
+                Visible = false,
+                Parent = container
+            });
+            local width = tempLabel.TextBounds.X;
+            tempLabel:Destroy();
+            
+            segmentWidths[i] = width;
+            totalWidth = totalWidth + width;
+        end
+        
+        -- Начинаем с центра и идем влево
+        local startX = (400 - totalWidth) / 2;
+        local currentX = startX;
+        
+        for i, segment in ipairs(segments) do
+            local label = createObject("TextLabel", {
+                Name = "Segment_" .. i,
+                Parent = container,
+                BackgroundTransparency = 1,
+                Position = UDim2.new(0, currentX, 0, 0),
+                Size = UDim2.new(0, segmentWidths[i], 1, 0),
+                Text = segment.text,
+                Font = self.TextFont,
+                TextColor3 = segment.color,
+                TextSize = self.TextSize,
+                TextStrokeColor3 = self.TextStrokeColor,
+                TextStrokeTransparency = self.TextStrokeTransparency,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                TextTransparency = 1,
+                ZIndex = 2
+            });
+            
+            -- Добавляем glow для цветного текста
+            if segment.isColored and self.GlowEnabled then
+                self:CreateGlow(label, segment.color);
+            end
+            
+            -- Применяем эффект если указан для этого сегмента
+            if options.effects and options.effects[i] then
+                self:ApplyEffect(label, options.effects[i].type, options.effects[i].data or {});
+            end
+            
+            currentX = currentX + segmentWidths[i];
+        end
+        
+        -- Добавляем в список активных
+        insert(self.activeNotifications, container);
+        
+        -- Анимация появления
+        for _, child in ipairs(container:GetChildren()) do
+            if child:IsA("TextLabel") then
+                tweenService:Create(child, TweenInfo.new(self.FadeInTime, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                    TextTransparency = 0,
+                    TextStrokeTransparency = self.TextStrokeTransparency
+                }):Play();
+                
+                if child:FindFirstChild("Glow") then
+                    tweenService:Create(child.Glow, TweenInfo.new(self.FadeInTime, Enum.EasingStyle.Sine, Enum.EasingDirection.Out), {
+                        ImageTransparency = self.GlowTransparency
+                    }):Play();
+                end
+            end
+        end
+    
+        task.delay(self.NotificationLifetime, function()
+            -- Останавливаем эффекты
+            for i = #activeEffects, 1, -1 do
+                if activeEffects[i].label and activeEffects[i].label:IsDescendantOf(container) then
+                    activeEffects[i].active = false;
+                    if activeEffects[i].connection then
+                        activeEffects[i].connection:Disconnect();
+                    end
+                    remove(activeEffects, i);
+                end
+            end
+            
+            fadeObject(container, self.FadeOutTime, function()
+                -- Удаляем из списка активных
+                local index = find(self.activeNotifications, container);
+                if index then
+                    remove(self.activeNotifications, index);
+                end
+                
+                container:Destroy();
+            end);
+        end);
+    end
+end
+
+return notifications
